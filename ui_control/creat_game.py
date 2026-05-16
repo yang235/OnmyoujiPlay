@@ -1,97 +1,71 @@
-import os
-import subprocess
 from time import sleep
 
-
-import numpy as np
-import pyautogui
-import win32gui
-
-
-def run_play():
-    exe_path = r"D:\阴阳师\Launch.exe"
-    subprocess.Popen(exe_path)
-
-
-def windows_get():
-    """获取阴阳师窗口句柄和位置"""
-    window = win32gui.FindWindow(None, '阴阳师-MuMu模拟器专版')
-
-    print(f"窗口句柄: {window}")
-
-    if window == 0 or window is None:
-        return None
-
-    rect = win32gui.GetWindowRect(window)
-    print(f"窗口位置: {rect}")
-
-    return window, rect
+from anasis.utils.compile import compare_with_template_grep as cwg
+from anasis.utils.excel_analysis import count_info, part_info, remark_info
+from anasis.utils.photo_utils import photo_path
+from anasis.utils.pp_ocr import choose_part, choose_count, choose_user_one_part
+from game_actions import register
+from game_actions.gouxie import gou_xie
+from game_actions.return_game_login import user_avatar, user_center
+from ui_control.window_control.mouse_action import mouse_click
+from ui_control.window_control.win import windows_get, capture_window
 
 
-def capture_window(rect):
-    """截取窗口区域"""
-    left, top, right, bottom = rect
-    width = right - left
-    height = bottom - top
+def start_step(count_name, parts, rect):
+    # 截图窗口内容
+    sleep(2)
+    capture_window(rect)
+    match_enter = choose_count(count_name, rect)
+    if match_enter:
+        # 进入游戏后重新截屏
+        sleep(5)
+        screenshot = capture_window(rect)
+        exchange = cwg(screenshot, photo_path("exchange.png"))
+        mouse_click(exchange, rect)
+        sleep(1)
+        capture_window(rect)
+        # 选择分区
+        parts, remove_part = choose_part(parts, rect)
+        sleep(3)
+        screenshot = capture_window(rect)
+        # 分区进去游戏
+        exchange = cwg(screenshot, photo_path("enter_game2.png"))
+        print("点击进入游戏")
+        mouse_click(exchange, rect)
+        # 判断是否多分区登录
+        screenshot = capture_window(rect)
+        more_parts = cwg(screenshot, photo_path("more_part.png"))
+        if more_parts is not None:
+            choose_user_one_part(remove_part,exchange,rect)
+        if exchange is not None:
+            sleep(10)
+            # ToDO 增加广告关闭
 
-    screenshot = pyautogui.screenshot(region=(left, top, width, height))
-    screenshot.save('full.png')
-    return cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-
-
-def compare_with_template(screenshot, template_path, threshold=0.8):
-    """将截图与模板图片进行模板匹配"""
-    template = cv2.imread(template_path)
-    if template is None:
-        print(f"无法读取模板图片: {template_path}")
-        return None
-
-    result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
-    _, max_val, _, max_loc = cv2.minMaxLoc(result)
-
-    print(f"模板匹配相似度: {max_val:.4f}")
-
-    if max_val >= threshold:
-        h, w = template.shape[:2]
-        center_x = max_loc[0] + w // 2
-        center_y = max_loc[1] + h // 2
-        print(f"匹配成功! 截图内坐标: ({center_x}, {center_y})")
-        return center_x, center_y
+            # TODO 勾协与神秘商人可接入
+            gou_xie(rect)
+            sleep(2)
+            screenshot = capture_window(rect)
+            user_avatar(screenshot, rect)
+            sleep(3)
+            screenshot = capture_window(rect)
+            user_center(screenshot, rect)
+        return parts, remove_part
     else:
-        print(f"未匹配到模板（最高相似度 {max_val:.4f} < 阈值 {threshold}）")
-        return None
+        print("未找到进入游戏按钮")
 
-
-def mouse_click():
-    current_x, current_y = pyautogui.position()
-    print(f"鼠标位置: x={current_x}, y={current_y}")
-
-
-if __name__ == '__main__':
+@register("login")
+def login():
+    count_names = count_info()
+    parts = part_info(count_names)
     result = windows_get()
     if result is None:
-        print("未找到游戏窗口，尝试启动游戏...")
-        run_play()
-        sleep(10)
-        result = windows_get()
-        if result is None:
-            print("启动失败，退出")
-            exit()
-
-    window, rect = result
-
-    # 截图窗口内容
-    screenshot = capture_window(rect)
-    print(f"截图尺寸: {screenshot.shape}")
-
-    # 与 anasis/photo/game_login.png 做对比
-    template_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        '..', 'anasis', 'photo', 'game_login.png'
-    )
-    match_pos = compare_with_template(screenshot, template_path)
-
-    if match_pos:
-        print(f"已识别到登录界面，按钮位置: {match_pos}")
-
-    mouse_click()
+        print("未找到游戏窗口,请启动游戏")
+        exit()
+    _, rect = result
+    print("请勿移动窗口")
+    for count_name in count_names:
+        print(count_name)
+        parts = part_info(count_name)
+        while parts is not None and len(parts) > 0:
+            parts,_ = start_step(count_name, parts, rect)
+            remark_info(count_name, parts)
