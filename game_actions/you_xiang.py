@@ -27,6 +27,7 @@ def you_xiang(ctx):
     match_pos = stream.wait_for_template(photo_path("yx_lingqu.png"), 0.8, timeout=5)
     if match_pos is None:
         logging.info("当前邮箱不需要领取")
+        board_press("esc")
         return True
     mouse_click(match_pos, rect)
     match_pos = stream.wait_for_template(photo_path("yx_queren.png"), 0.8, timeout=5)
