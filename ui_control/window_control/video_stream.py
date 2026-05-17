@@ -95,13 +95,14 @@ class VideoStream:
     def _capture_loop(self):
         interval = 1.0 / self.fps
         while self._running:
+            frame_start = time.time()
             try:
                 frame = _grab_screen(self.rect)
                 with self._lock:
                     self._latest_frame = frame
             except Exception as e:
                 logging.debug(f"抓屏异常: {e}")
-            elapsed = time.time()
-            sleep_time = interval - (time.time() - elapsed)
+            elapsed = time.time() - frame_start
+            sleep_time = interval - elapsed
             if sleep_time > 0:
                 time.sleep(sleep_time)
