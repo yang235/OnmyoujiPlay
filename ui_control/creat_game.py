@@ -15,9 +15,9 @@ from ui_control.window_control.win import windows_get
 
 
 def start_step(count_name, parts, rect):
-    sleep(2)
     stream = VideoStream(rect)
     stream.start()
+    sleep(2)
     try:
         # OCR: 保存帧供 choose_count 识别
         frame = stream.read()
