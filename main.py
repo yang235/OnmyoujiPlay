@@ -6,7 +6,7 @@ from game_actions import load, dispatch, list_actions
 
 
 def main():
-    load("game_actions.activate")
+    load("game_actions.load_parts")
     load("game_actions.gouxie")
     load("ui_control.creat_game")
     logging.info("已注册动作:", list_actions())

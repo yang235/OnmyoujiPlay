@@ -9,8 +9,8 @@ from game_actions.control_game import register
 from ui_control.window_control.mouse_action import mouse_click
 
 
-@register("activate")
-def activate(ctx):
+@register("load_parts")
+def load_parts(ctx):
     """游戏激活：选角→进入游戏→选分区→进入"""
     rect = ctx["rect"]
     stream = ctx["stream"]

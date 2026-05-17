@@ -1,11 +1,18 @@
+import logging
 import os
+import sys
 
 import pandas as pd
 
 
-def excel_analysis(file_name='../count_info.xlsx'):
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(base_dir, file_name)
+def _base_dir():
+    if getattr(sys, 'frozen', False):
+        return sys._MEIPASS
+    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+def excel_analysis(file_name='count_info.xlsx'):
+    file_path = os.path.join(_base_dir(), "anasis", file_name)
     df = pd.read_excel(file_path, sheet_name='Sheet1')
     return file_path, df
 
@@ -17,7 +24,7 @@ def read_excel():
 def count_info():
     rec_texts = read_excel()
     count_data = list({item['count'] for item in rec_texts})
-    print(count_data)
+    logging.info(count_data)
     return count_data
 
 def part_info(count_name):

@@ -1,3 +1,4 @@
+import logging
 from time import sleep
 
 import pyautogui
@@ -16,14 +17,14 @@ def move_mouse(x1, y1, x2, y2):
 def mouse_click(mouse, rect):  #mouse =  mouse_x mouse_y
     current_x, current_y = pyautogui.position()
     # 示例调用
-    print(f"鼠标位置: x={current_x}, y={current_y}")
+    logging.info(f"鼠标位置: x={current_x}, y={current_y}")
     move_mouse(current_x, current_y, mouse[0] + rect[0], mouse[1] + rect[1])
 
     pyautogui.click()
 
     current_x, current_y = pyautogui.position()
     # 示例调用
-    print(f"鼠标位置: x={current_x}, y={current_y}")
+    logging.info(f"鼠标位置: x={current_x}, y={current_y}")
 
 def mouse_scroll(base, rect):
     current_x, current_y = pyautogui.position()

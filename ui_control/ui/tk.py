@@ -231,9 +231,9 @@ class App:
         logging.info("开始执行登录流程")
 
         def _run():
-            from ui_control.creat_game import login
+            from main import main
             try:
-                login()
+                main()
                 self.root.after(0, self._on_login_done)
             except SystemExit:
                 self.root.after(0, self._on_login_done)

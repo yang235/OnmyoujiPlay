@@ -1,19 +1,36 @@
 import json
+import logging
+import threading
 from time import sleep
 from typing import List
 
 from paddleocr import PaddleOCR
-from sympy.external.gmpy import remove
 
 from anasis.utils.photo_utils import save_photo_path, save_ocr_path
 from ui_control.window_control.mouse_action import mouse_click, mouse_scroll
 from ui_control.window_control.win import capture_window
 
-pipeline = PaddleOCR(
-    use_doc_orientation_classify=False, # 通过 use_doc_orientation_classify 参数指定不使用文档方向分类模型
-    use_doc_unwarping=False, # 通过 use_doc_unwarping 参数指定不使用文本图像矫正模型
-    use_textline_orientation=False,
-    device="gpu",)
+pipeline = None
+_lock = threading.Lock()
+
+
+def init_ocr():
+    global pipeline
+    with _lock:
+        if pipeline is not None:
+            return
+        logging.info("OCR插件加载中...")
+        pipeline = PaddleOCR(
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            use_textline_orientation=False,
+            device="gpu",
+        )
+        logging.info("OCR插件加载完毕")
+
+
+def is_ocr_ready():
+    return pipeline is not None
 
 def center(box):
     if box is not None:
@@ -40,6 +57,8 @@ def parse_ocr_result(result_json_path: str) -> List[dict]:
 
 
 def screen():
+    if pipeline is None:
+        init_ocr()
     output = pipeline.predict(input=save_photo_path("yys.png"))
     output[0].save_to_img(save_ocr_path())
     output[0].save_to_json(save_ocr_path())
@@ -70,7 +89,7 @@ def choose_part(parts, rect):
                 fot = item["center"]
             if item["text"] in parts:
                 mouse_click(item["center"], rect)
-                print(item["text"])
+                logging.info(item["text"])
                 remove_part = item["text"]
                 parts.remove(item["text"])
                 is_find = True
@@ -86,10 +105,10 @@ def find_count(count_name, rect, enter_count):
     items = screen()
     for item in items:
         if item["text"] == count_name:
-            print(item["text"], item["center"])
+            logging.info(item["text"], item["center"])
             mouse_click(item["center"], rect)
             sleep(2)
-            print("已识别到登录界面，开始匹配进入游戏按钮...")
+            logging.info("已识别到登录界面，开始匹配进入游戏按钮...")
             mouse_click(enter_count, rect)
             return True
     return False
@@ -104,13 +123,13 @@ def choose_count(count_name, rect):
             is_count = True
         if item["text"] == "进入游戏":
             enter_count = item["center"]
-            print(item["text"], enter_count)
+            logging.info(item["text"], enter_count)
         if item["text"] == "网易游戏":
             base_count = item["center"]
-            print(item["text"], base_count)
+            logging.info(item["text"], base_count)
     end_count = (enter_count[0], (enter_count[1] + base_count[1])/2)
     if is_count:
-        print("已识别到登录界面，开始匹配进入游戏按钮...")
+        logging.info("已识别到登录界面，开始匹配进入游戏按钮...")
         mouse_click(enter_count, rect)
         return True
     else:

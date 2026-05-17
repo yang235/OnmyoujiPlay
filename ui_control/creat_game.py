@@ -16,10 +16,9 @@ def start_step(count_name, parts, rect):
     sleep(2)
     try:
         ctx = {"rect": rect, "stream": stream, "count_name": count_name, "parts": parts}
-        ok = dispatch("activate", ctx)
+        ok = dispatch("load_parts", ctx)
         if ok:
-            sleep(10)
-            # ToDO 增加广告关闭
+            sleep(5)
             run_chain("daily", ctx)
             sleep(2)
             user_avatar(stream, rect)
