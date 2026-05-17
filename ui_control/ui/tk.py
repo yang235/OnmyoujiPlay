@@ -4,6 +4,9 @@ import threading
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+import cv2
+from PIL import Image, ImageTk
+
 from anasis.utils.excel_analysis import count_info, restart_mark, excel_analysis
 
 
@@ -31,36 +34,53 @@ class App:
     def __init__(self, root):
         self.root = root
         self.root.title("阴阳师 自动化")
-        self.root.geometry("500x640")
+        self.root.geometry("900x640")
 
-        # 账号列表
-        ttk.Label(root, text="账号列表").pack(pady=(10, 0))
-        self.count_listbox = tk.Listbox(root, height=6, width=35)
+        # --- 主容器: 左右分栏 ---
+        main_frame = ttk.Frame(root)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        left_frame = ttk.Frame(main_frame, width=320)
+        left_frame.pack(side=tk.LEFT, fill=tk.Y)
+        left_frame.pack_propagate(False)
+
+        right_frame = ttk.Frame(main_frame)
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        # === 左侧 ===
+        ttk.Label(left_frame, text="账号列表").pack(pady=(10, 0))
+        self.count_listbox = tk.Listbox(left_frame, height=6, width=35)
         self.count_listbox.pack(pady=5)
         self.count_listbox.bind("<<ListboxSelect>>", self.on_count_select)
 
-        ttk.Button(root, text="刷新账号列表", command=self.refresh_counts).pack()
+        ttk.Button(left_frame, text="刷新账号列表", command=self.refresh_counts).pack()
 
-        # 分区列表 (单击切换选中/取消)
-        ttk.Label(root, text="分区").pack(pady=(15, 0))
-        self.part_listbox = tk.Listbox(root, height=10, width=35, selectmode=tk.MULTIPLE)
+        ttk.Label(left_frame, text="分区").pack(pady=(15, 0))
+        self.part_listbox = tk.Listbox(left_frame, height=10, width=35, selectmode=tk.MULTIPLE)
         self.part_listbox.pack(pady=5)
         self.part_listbox.bind("<Button-1>", self._on_part_click)
 
-        # 操作按钮
-        btn_frame = ttk.Frame(root)
+        btn_frame = ttk.Frame(left_frame)
         btn_frame.pack(pady=15)
-        ttk.Button(btn_frame, text="标记已完成", command=self.mark_done).pack(side=tk.LEFT, padx=5)
-        ttk.Button(btn_frame, text="重置所有标记", command=self.reset_marks).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="标记已完成", command=self.mark_done).pack(side=tk.LEFT, padx=2)
+        ttk.Button(btn_frame, text="重置所有标记", command=self.reset_marks).pack(side=tk.LEFT, padx=2)
         self.login_btn = ttk.Button(btn_frame, text="启动登录", command=self.start_login)
-        self.login_btn.pack(side=tk.LEFT, padx=5)
+        self.login_btn.pack(side=tk.LEFT, padx=2)
         self.stop_btn = ttk.Button(btn_frame, text="停止", command=self.stop_login, state=tk.DISABLED)
-        self.stop_btn.pack(side=tk.LEFT, padx=5)
+        self.stop_btn.pack(side=tk.LEFT, padx=2)
 
-        # 信息框
-        info_frame = ttk.LabelFrame(root, text="操作日志", padding=5)
-        info_frame.pack(pady=(10, 0), fill=tk.BOTH, expand=True)
-        self.info_text = tk.Text(info_frame, height=6, width=35, state=tk.DISABLED)
+        # === 右侧 ===
+        # 视频流显示
+        stream_frame = ttk.LabelFrame(right_frame, text="实时画面", padding=5)
+        stream_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.stream_label = ttk.Label(stream_frame, text="等待游戏窗口...")
+        self.stream_label.pack(fill=tk.BOTH, expand=True)
+
+        # 操作日志
+        info_frame = ttk.LabelFrame(right_frame, text="操作日志", padding=5)
+        info_frame.pack(fill=tk.BOTH, expand=True)
+        self.info_text = tk.Text(info_frame, height=6, width=30, state=tk.DISABLED)
         scrollbar = ttk.Scrollbar(info_frame, command=self.info_text.yview)
         self.info_text.configure(yscrollcommand=scrollbar.set)
         self.info_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -72,14 +92,17 @@ class App:
 
         self._part_data = {}
         self._current_count = None
+        self._display_stream = None
+        self._stream_photo = None
 
-        # 配置 logging 输出到信息框
         handler = TkinterLogHandler(self.info_text)
         logging.root.addHandler(handler)
         logging.root.setLevel(logging.INFO)
 
         self.refresh_counts()
         self._preload_ocr()
+        self._start_display_stream()
+        self._update_stream_display()
 
     def _preload_ocr(self):
         logging.info("OCR插件加载中...")
@@ -94,6 +117,37 @@ class App:
                 self.root.after(0, lambda err=e: logging.error(f"OCR插件加载失败: {err}"))
 
         threading.Thread(target=_load, daemon=True).start()
+
+    def _start_display_stream(self):
+        """尝试启动显示用视频流"""
+        try:
+            from ui_control.window_control.win import windows_get
+            result = windows_get()
+            if result is None:
+                logging.info("未找到游戏窗口，视频流显示暂不可用")
+                return
+            _, rect = result
+            from ui_control.window_control.video_stream import VideoStream
+            self._display_stream = VideoStream(rect, fps=10)
+            self._display_stream.start()
+            logging.info("视频流显示已启动")
+        except Exception as e:
+            logging.debug(f"启动显示流失败: {e}")
+
+    def _update_stream_display(self):
+        """定时从显示流读取帧并更新到界面"""
+        if self._display_stream is not None:
+            frame = self._display_stream.read()
+            if frame is not None:
+                h, w = frame.shape[:2]
+                scale = min(400 / w, 300 / h)
+                new_w, new_h = int(w * scale), int(h * scale)
+                frame = cv2.resize(frame, (new_w, new_h))
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                img = Image.fromarray(frame_rgb)
+                self._stream_photo = ImageTk.PhotoImage(img)
+                self.stream_label.configure(image=self._stream_photo, text="")
+        self.root.after(100, self._update_stream_display)
 
     def refresh_counts(self):
         self.count_listbox.delete(0, tk.END)
