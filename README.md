@@ -10,7 +10,7 @@
 - **多账号批量管理** — tkinter UI 展示账号列表、分区状态，支持批量登录
 - **Excel 进度记录** — 自动标记已完成的分区
 - **绿色便携打包** — 内嵌 Python 运行时 + 全部依赖，解压即用
-- 夸克网盘:「OnmyoujiPlay_portable.zip」链接:https://pan.quark.cn/s/121aac25b027 提取码：5HVQ
+- 夸克网盘:「OnmyoujiPlay_portable.zip」链接:https://pan.quark.cn/s/f39d83a563be 提取码：FjUg
 
 ## 项目结构
 
@@ -21,7 +21,7 @@ OnmyoujiPlay/
 ├── game_actions/               # 动作模块（可链式调用）
 │   ├── __init__.py             # 导出 register / dispatch / load / run_chain
 │   ├── control_game.py         # 动作注册、链式调度核心
-│   ├── game_actions.json       # 动作链配置 {"chains": {"daily": ["gou_xie", "you_xiang"]}}
+│   ├── game_actions.json       # 动作链配置 {"chains": {"daily": ["gou_xie", "you_xiang", "check_in"]}}
 │   ├── load_parts.py           # 进入游戏：选号→选分区→进入
 │   ├── gou_xie.py              # 勾协：匹配封印→寻找勾协→截图
 │   ├── you_xiang.py            # 邮箱：识别邮箱→领取→确认
@@ -87,7 +87,7 @@ python ui_control/ui/tk.py
 ```json
 {
     "chains": {
-        "daily": ["gou_xie", "you_xiang"]
+        "daily": ["gou_xie", "you_xiang", "check_in"]
     }
 }
 ```
