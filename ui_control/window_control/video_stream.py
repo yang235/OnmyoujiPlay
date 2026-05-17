@@ -21,22 +21,25 @@ def _grab_screen(rect):
     desktop_dc = win32gui.GetWindowDC(hdesktop)
     img_dc = win32ui.CreateDCFromHandle(desktop_dc)
     mem_dc = img_dc.CreateCompatibleDC()
-
     bmp = win32ui.CreateBitmap()
-    bmp.CreateCompatibleBitmap(img_dc, width, height)
-    old_bmp = mem_dc.SelectObject(bmp)
-    mem_dc.BitBlt((0, 0), (width, height), img_dc, (left, top), win32con.SRCCOPY)
+    old_bmp = None
 
-    bmpstr = bmp.GetBitmapBits(True)
-    img = np.frombuffer(bmpstr, dtype=np.uint8).reshape((height, width, 4))
+    try:
+        bmp.CreateCompatibleBitmap(img_dc, width, height)
+        old_bmp = mem_dc.SelectObject(bmp)
+        mem_dc.BitBlt((0, 0), (width, height), img_dc, (left, top), win32con.SRCCOPY)
 
-    mem_dc.SelectObject(old_bmp)
-    win32gui.DeleteObject(bmp.GetHandle())
-    mem_dc.DeleteDC()
-    img_dc.DeleteDC()
-    win32gui.ReleaseDC(hdesktop, desktop_dc)
+        bmpstr = bmp.GetBitmapBits(True)
+        img = np.frombuffer(bmpstr, dtype=np.uint8).reshape((height, width, 4))
 
-    return img[:, :, :3]
+        return img[:, :, :3]
+    finally:
+        if old_bmp is not None:
+            mem_dc.SelectObject(old_bmp)
+        win32gui.DeleteObject(bmp.GetHandle())
+        mem_dc.DeleteDC()
+        img_dc.DeleteDC()
+        win32gui.ReleaseDC(hdesktop, desktop_dc)
 
 
 class VideoStream:
@@ -64,6 +67,8 @@ class VideoStream:
         self._running = False
         if self._thread is not None:
             self._thread.join(timeout=2)
+        with self._lock:
+            self._latest_frame = None
         logging.info("VideoStream 已停止")
 
     def read(self):
@@ -102,6 +107,7 @@ class VideoStream:
                     self._latest_frame = frame
             except Exception as e:
                 logging.debug(f"抓屏异常: {e}")
+                time.sleep(0.1)
             elapsed = time.time() - frame_start
             sleep_time = interval - elapsed
             if sleep_time > 0:
