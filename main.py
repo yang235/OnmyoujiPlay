@@ -1,11 +1,15 @@
 """项目启动入口"""
 
+import logging
+
 from game_actions import load, dispatch, list_actions
 
 
 def main():
+    load("game_actions.activate")
+    load("game_actions.gouxie")
     load("ui_control.creat_game")
-    print("已注册动作:", list_actions())
+    logging.info("已注册动作:", list_actions())
     dispatch("login")
 
 
