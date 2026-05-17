@@ -1,0 +1,90 @@
+============================================
+  OnmyoujiPlay 绿色便携包 打包说明
+============================================
+
+一、打包方案
+────────────────────────────────────────────
+  保留完整项目源码结构，内嵌 Python 运行时 +
+  全部第三方依赖，通过 start.bat 启动 tk UI。
+
+  目录结构：
+    OnmyoujiPlay_portable/
+    ├── start.bat              # 双击启动
+    ├── runtime/               # Python 3.8 + 依赖
+    │   ├── python.exe
+    │   ├── python3.dll
+    │   ├── python38.dll
+    │   ├── DLLs/              # _tkinter 等 C 扩展
+    │   ├── tcl/               # Tcl/Tk 运行时
+    │   └── Lib/               # site-packages + 标准库
+    ├── anasis/                # 模板图片 + 工具
+    ├── game_actions/          # 动作模块
+    ├── ui_control/            # UI + 窗口控制
+    └── main.py
+
+
+二、打包步骤
+────────────────────────────────────────────
+
+  1. 创建输出目录
+     mkdir dist\OnmyoujiPlay_portable\runtime
+
+  2. 复制 Python 运行时
+     cp <conda_env>\python.exe  dist\...\runtime\
+     cp <conda_env>\python3.dll dist\...\runtime\
+     cp <conda_env>\python38.dll dist\...\runtime\
+
+  3. 复制标准库 + 第三方包
+     cp -r <conda_env>\Lib      dist\...\runtime\
+
+  4. 复制 C 扩展 (含 _tkinter.pyd)
+     cp -r <conda_env>\DLLs      dist\...\runtime\
+
+  5. 复制 Tcl/Tk 运行时 (tkinter 依赖)
+     cp -r <conda_env>\tcl       dist\...\runtime\
+
+  6. 复制项目源码
+     cp -r anasis/ game_actions/ ui_control/ main.py dist\...\
+     (排除 __pycache__)
+
+  7. 创建 start.bat (内容见第四节)
+
+
+三、start.bat 说明
+────────────────────────────────────────────
+  必须设置的环境变量：
+
+    PYTHONHOME  = runtime 目录        (Python 找标准库)
+    PYTHONPATH  = 项目根目录           (找到 anasis/game_actions 包)
+    PATH        = runtime + DLLs + Lib (找 python.exe + C 扩展 DLL)
+    TCL_LIBRARY = tcl\tcl8.6          (tkinter 依赖)
+    TK_LIBRARY  = tcl\tk8.6           (tkinter 依赖)
+
+  关键点：PYTHONPATH 必须指向 bat 所在目录，否则 tk.py
+  运行时找不到同级的 anasis、game_actions 包。
+
+
+四、start.bat 完整内容
+────────────────────────────────────────────
+@echo off
+chcp 65001 >nul
+set "PYTHONHOME=%~dp0runtime"
+set "PYTHONPATH=%~dp0"
+set "PATH=%~dp0runtime;%~dp0runtime\DLLs;%~dp0runtime\Lib;%PATH%"
+set "TCL_LIBRARY=%~dp0runtime\tcl\tcl8.6"
+set "TK_LIBRARY=%~dp0runtime\tcl\tk8.6"
+if not exist "%~dp0output" mkdir "%~dp0output"
+if not exist "%~dp0output\gouxie" mkdir "%~dp0output\gouxie"
+"%~dp0runtime\python.exe" "%~dp0ui_control\ui\tk.py"
+pause
+
+
+五、对比
+────────────────────────────────────────────
+                    PyInstaller      便携包 (推荐)
+  项目源码         编译进 EXE        完整可见可编辑
+  模板图片         藏在 _internal    直接替换即生效
+  JSON 配置         藏在 _internal    直接修改即生效
+  启动方式         OnmyoujiPlay.exe  start.bat
+  大小             ~6GB              ~10GB
+  依赖环境         无需              无需
