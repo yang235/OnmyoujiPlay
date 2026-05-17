@@ -1,5 +1,7 @@
 import ctypes
+import json
 import logging
+import os
 import threading
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -68,6 +70,24 @@ class App:
         self.login_btn.pack(side=tk.LEFT, padx=2)
         self.stop_btn = ttk.Button(btn_frame, text="停止", command=self.stop_login, state=tk.DISABLED)
         self.stop_btn.pack(side=tk.LEFT, padx=2)
+
+        # 每日任务勾选框
+        daily_frame = ttk.LabelFrame(left_frame, text="每日任务", padding=5)
+        daily_frame.pack(fill=tk.X, padx=5, pady=(15, 0))
+        self._daily_vars = {}
+        self._daily_tasks = [
+            ("gou_xie", "勾协"),
+            ("you_xiang", "邮箱"),
+            ("check_in", "签到"),
+        ]
+        for key, label in self._daily_tasks:
+            var = tk.BooleanVar(value=self._load_daily_state(key))
+            self._daily_vars[key] = var
+            cb = ttk.Checkbutton(
+                daily_frame, text=label, variable=var,
+                command=lambda k=key: self._on_daily_toggle(k)
+            )
+            cb.pack(anchor=tk.W, padx=5, pady=2)
 
         # === 右侧 ===
         # 视频流显示
@@ -223,6 +243,39 @@ class App:
             self._refresh_parts(count_name)
         self.status.config(text="已重置所有标记")
         logging.info("所有标记已重置为0")
+
+    @staticmethod
+    def _game_actions_path():
+        return os.path.join(os.path.dirname(__file__), "..", "..", "game_actions", "game_actions.json")
+
+    def _load_daily_state(self, key):
+        """检查 game_actions.json 中 daily 数组里是否存在指定 key"""
+        try:
+            path = self._game_actions_path()
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                return key in data.get("chains", {}).get("daily", [])
+        except (json.JSONDecodeError, IOError):
+            pass
+        return False
+
+    def _on_daily_toggle(self, _key=None):
+        """勾选框状态变化时写入 game_actions.json"""
+        path = self._game_actions_path()
+        daily = [k for k, v in self._daily_vars.items() if v.get()]
+        try:
+            data = {}
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            data.setdefault("chains", {})["daily"] = daily
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            logging.info(f"每日任务已更新: {daily}")
+        except IOError as e:
+            logging.error(f"写入每日任务配置失败: {e}")
 
     def start_login(self):
         self.login_btn.config(state=tk.DISABLED)

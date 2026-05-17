@@ -22,8 +22,8 @@ def you_xiang(ctx):
     mouse_click(match_pos, rect)
     match_pos = stream.wait_for_template(photo_path("yx_net_error.png"), 0.8, timeout=2)
     if match_pos is not None:
-        logging.info("网络卡顿请等待")
-        sleep(10)
+        logging.info("请等待")
+        sleep(5)
     match_pos = stream.wait_for_template(photo_path("yx_lingqu.png"), 0.8, timeout=5)
     if match_pos is None:
         logging.info("当前邮箱不需要领取")
