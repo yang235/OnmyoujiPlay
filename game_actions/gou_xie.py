@@ -29,10 +29,6 @@ def gou_xie(ctx):
     mouse_click(match_pos, rect)
     sleep(2)
     logging.info("正在寻找勾协...")
-    match_pos = stream.wait_for_template(photo_path("error_gouxie.png"), 0.9, timeout=2)
-    if match_pos is not None:
-        logging.info("协作未加载完成")
-        return False
     match_pos = stream.wait_for_template(photo_path("gouxie.png"), 0.7, timeout=3)
     if match_pos is not None:
         frame = stream.read()

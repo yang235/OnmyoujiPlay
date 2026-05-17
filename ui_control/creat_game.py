@@ -2,7 +2,6 @@ import logging
 from time import sleep
 
 from anasis.utils.excel_analysis import count_info, part_info, remark_info
-from anasis.utils.photo_utils import save_photo_path
 from game_actions import register
 from game_actions.control_game import dispatch, run_chain
 from game_actions.return_game_login import user_avatar, user_center
