@@ -10,6 +10,7 @@
 - **多账号批量管理** — tkinter UI 展示账号列表、分区状态，支持批量登录
 - **Excel 进度记录** — 自动标记已完成的分区
 - **绿色便携打包** — 内嵌 Python 运行时 + 全部依赖，解压即用
+- 夸克网盘:「OnmyoujiPlay_portable.zip」链接:https://pan.quark.cn/s/121aac25b027 提取码：5HVQ
 
 ## 项目结构
 
