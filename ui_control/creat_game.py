@@ -18,7 +18,7 @@ def start_step(count_name, parts, rect):
         ctx = {"rect": rect, "stream": stream, "count_name": count_name, "parts": parts}
         ok = dispatch("load_parts", ctx)
         if ok:
-            sleep(5)
+            sleep(2)
             run_chain("daily", ctx)
             sleep(2)
             user_avatar(stream, rect)

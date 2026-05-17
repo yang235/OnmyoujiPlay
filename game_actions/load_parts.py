@@ -53,7 +53,7 @@ def load_parts(ctx):
         choose_user_one_part(remove_part, enter_match, rect)
 
     if enter_match is not None:
-        sleep(10)
+        sleep(3)
     ctx["parts"] = parts
     ctx["remove_part"] = remove_part
     return True

@@ -17,7 +17,7 @@ def gou_xie(ctx):
 
     match_pos = stream.wait_for_template(photo_path("right_up.png"), 0.4, timeout=5)
     if match_pos is None:
-        logging.info("封印悬赏步骤未成功，请重试")
+        logging.info("校验进入游戏未成功，请重试")
         return False
     logging.info("已识别到进入游戏，开始匹配悬赏...")
     match_pos = stream.wait_for_template(photo_path("fengyin.png"), timeout=5)
@@ -29,7 +29,7 @@ def gou_xie(ctx):
     mouse_click(match_pos, rect)
     sleep(2)
     logging.info("正在寻找勾协...")
-    match_pos = stream.wait_for_template(photo_path("error_gouxie.png"), 0.9, timeout=3)
+    match_pos = stream.wait_for_template(photo_path("error_gouxie.png"), 0.9, timeout=2)
     if match_pos is not None:
         logging.info("协作未加载完成")
         return False
