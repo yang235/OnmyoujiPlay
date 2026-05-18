@@ -71,20 +71,38 @@ class App:
         self.stop_btn = ttk.Button(btn_frame, text="停止", command=self.stop_login, state=tk.DISABLED)
         self.stop_btn.pack(side=tk.LEFT, padx=2)
 
-        # 每日任务勾选框
+        # 每日任务勾选框 —— 左侧基础任务 + 右侧活动
         daily_frame = ttk.LabelFrame(left_frame, text="每日任务", padding=5)
         daily_frame.pack(fill=tk.X, padx=5, pady=(15, 0))
+
+        daily_left = ttk.Frame(daily_frame)
+        daily_left.pack(side=tk.LEFT, anchor=tk.N)
+
+        daily_right = ttk.Frame(daily_frame)
+        daily_right.pack(side=tk.RIGHT, anchor=tk.N, padx=(10, 0))
+
         self._daily_vars = {}
-        self._daily_tasks = [
+        left_tasks = [
             ("gou_xie", "勾协"),
             ("you_xiang", "邮箱"),
             ("check_in", "签到"),
         ]
-        for key, label in self._daily_tasks:
+        right_tasks = [
+            ("temple_activity", "累计签到活动"),
+        ]
+        for key, label in left_tasks:
             var = tk.BooleanVar(value=self._load_daily_state(key))
             self._daily_vars[key] = var
             cb = ttk.Checkbutton(
-                daily_frame, text=label, variable=var,
+                daily_left, text=label, variable=var,
+                command=lambda k=key: self._on_daily_toggle(k)
+            )
+            cb.pack(anchor=tk.W, padx=5, pady=2)
+        for key, label in right_tasks:
+            var = tk.BooleanVar(value=self._load_daily_state(key))
+            self._daily_vars[key] = var
+            cb = ttk.Checkbutton(
+                daily_right, text=label, variable=var,
                 command=lambda k=key: self._on_daily_toggle(k)
             )
             cb.pack(anchor=tk.W, padx=5, pady=2)
