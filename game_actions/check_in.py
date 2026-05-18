@@ -30,6 +30,8 @@ def check_in(ctx):
     match_pos = stream.wait_for_template(photo_path("qian_dao_close_esc.png"), 0.8, timeout=5)
     sleep(4)
     board_press("esc")
+    sleep(1)
+    board_press("esc")
     match_pos = stream.wait_for_template(photo_path("qd_success.png"), 0.8, timeout=5)
     match_pos = stream.wait_for_template(photo_path("qd_moyu_close.png"), 0.8, timeout=5)
     mouse_click(match_pos, rect)
