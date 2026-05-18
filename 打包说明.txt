@@ -88,3 +88,37 @@ pause
   启动方式         OnmyoujiPlay.exe  start.bat
   大小             ~6GB              ~10GB
   依赖环境         无需              无需
+
+
+	============================================
+	  实际操作记录 (2026-05-18)
+	============================================
+
+	六、只打包依赖（不包含项目文件）
+	────────────────────────────────────────────
+	  本次操作仅打包 Python 运行时 + 第三方依赖，
+	  不复制项目源码 (anasis/game_actions/ui_control/main.py)。
+
+	  源环境: D:\anaconda3\envs\oop (Python 3.8.20)
+	  输出目录: dist\OnmyoujiPlay_portable\runtime\
+
+	  执行命令:
+	    1. mkdir -p dist\OnmyoujiPlay_portable\runtime
+	    2. cp <env>\python.exe <env>\python3.dll <env>\python38.dll → runtime\
+	    3. cp -r <env>\DLLs → runtime\
+	    4. cp -r <env>\tcl  → runtime\
+	    5. cp -r <env>\Lib  → runtime\
+	    6. find runtime -type d -name "__pycache__" -exec rm -rf {} +
+
+	  最终产物: runtime\ (9.6GB)
+	    ├── python.exe
+	    ├── python3.dll
+	    ├── python38.dll
+	    ├── DLLs\          (_tkinter.pyd 等 C 扩展)
+	    ├── Lib\           (标准库 + site-packages)
+	    │   └── site-packages\  (opencv, paddleocr, pywin32,
+	    │                         pywinauto, pillow, PaddleOCR ...)
+	    └── tcl\           (tcl8.6, tk8.6)
+
+	  使用方式: 将项目源码目录 (anasis/game_actions/ui_control/main.py)
+	  与 runtime\ 放在同级，配合 start.bat 即可运行。
