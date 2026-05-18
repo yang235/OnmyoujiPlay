@@ -11,6 +11,9 @@ def _base_dir():
 def photo_path(name):
     return os.path.join(_base_dir(), "anasis", "photo", name)
 
+def activate_photo_path(name):
+    return os.path.join(_base_dir(), "anasis", "activate_photo", name)
+
 
 def save_photo_path(name):
     return os.path.join(_base_dir(), "output", name)

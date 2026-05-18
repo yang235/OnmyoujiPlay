@@ -6,12 +6,12 @@
 
 - **实时视频流监控** — 通过 win32 BitBlt 高速截取游戏窗口，使用 OpenCV 模板匹配实时识别游戏界面元素
 - **OCR 文字识别** — 基于 PaddleOCR 识别游戏内账号名、分区名等文字信息
-- **可配置动作链** — JSON 配置文件编排日常任务链，目前包含勾协、邮箱领取
+- **可配置动作链** — JSON 配置文件编排日常任务链，目前包含勾协、邮箱领取、签到
 - **多账号批量管理** — tkinter UI 展示账号列表、分区状态，支持批量登录
 - **Excel 进度记录** — 自动标记已完成的分区
 - **绿色便携打包** — 内嵌 Python 运行时 + 全部依赖，解压即用
-- 夸克网盘:「OnmyoujiPlay_portable.zip」链接:https://pan.quark.cn/s/f39d83a563be 提取码：FjUg
-
+- 夸克网盘:「OnmyoujiPlay_portable.zip」链接:https://pan.quark.cn/s/0bbcee715c67 提取码：ukjp
+- 下载源码与夸克中的runtime依赖，解压至目录文件onmyoujiPlay下既可以免下载环境直接运行
 ## 项目结构
 
 ```
