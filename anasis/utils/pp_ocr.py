@@ -7,7 +7,7 @@ from typing import List
 from paddleocr import PaddleOCR
 
 from anasis.utils.photo_utils import save_photo_path, save_ocr_path
-from ui_control.window_control.mouse_action import mouse_click, mouse_scroll
+from ui_control.window_control.mouse_action import mouse_click, mouse_scroll, move_mouse
 from ui_control.window_control.win import capture_window
 
 pipeline = None
@@ -100,9 +100,12 @@ def choose_part(parts, rect):
             capture_window(rect)
     return parts ,remove_part
 
-def find_count(count_name, rect, enter_count):
+def find_count(count_name, rect, enter_count, end_count):
+    mouse_scroll(end_count, rect)
+    sleep(1)
     capture_window(rect)
     items = screen()
+    is_find = False
     for item in items:
         if item["text"] == count_name:
             logging.info(item["text"], item["center"])
@@ -111,6 +114,9 @@ def find_count(count_name, rect, enter_count):
             logging.info("已识别到登录界面，开始匹配进入游戏按钮...")
             mouse_click(enter_count, rect)
             return True
+    if not is_find:
+        mouse_scroll(enter_count, rect)
+        find_count(count_name, rect, enter_count,end_count)
     return False
 
 def choose_count(count_name, rect):
@@ -134,7 +140,7 @@ def choose_count(count_name, rect):
         return True
     else:
         mouse_click(end_count, rect)
-        return find_count(count_name, rect, enter_count)
+        return find_count(count_name, rect, enter_count, end_count)
 
 
 def choose_user_one_part(part, enter_count,rect):
