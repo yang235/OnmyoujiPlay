@@ -27,7 +27,7 @@ def gou_xie(ctx):
         logging.info("匹配悬赏失败")
         return False
     mouse_click(match_pos, rect)
-    sleep(2)
+    sleep(3)
     logging.info("正在寻找勾协...")
     match_pos = stream.wait_for_template(photo_path("gouxie.png"), 0.7, timeout=3)
     if match_pos is not None:
