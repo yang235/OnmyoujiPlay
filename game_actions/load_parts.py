@@ -4,7 +4,7 @@ from time import sleep
 import cv2
 
 from anasis.utils.photo_utils import photo_path, save_photo_path
-from anasis.utils.pp_ocr import choose_part, choose_count, choose_user_one_part
+from anasis.utils.pp_ocr import choose_part, choose_count, choose_user_one_part, choose_exchange
 from game_actions.control_game import register
 from ui_control.window_control.mouse_action import mouse_click
 
@@ -27,7 +27,8 @@ def load_parts(ctx):
         return False
 
     sleep(5)
-    match_pos = stream.wait_for_template(photo_path("exchange.png"))
+
+    match_pos = stream.wait_for_template(photo_path("exchange.png"), 0.6)
     if match_pos is not None:
         mouse_click(match_pos, rect)
     sleep(1)
@@ -38,9 +39,12 @@ def load_parts(ctx):
         cv2.imwrite(save_photo_path("yys.png"), frame)
     parts, remove_part = choose_part(parts, rect)
     sleep(3)
-
-    enter_match = stream.wait_for_template(photo_path("enter_game2.png"))
     logging.info("点击进入游戏")
+
+    frame = stream.read()
+    if frame is not None:
+        cv2.imwrite(save_photo_path("yys.png"), frame)
+    enter_match = choose_exchange()
     if enter_match is not None:
         mouse_click(enter_match, rect)
 

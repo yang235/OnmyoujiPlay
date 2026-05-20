@@ -150,3 +150,11 @@ def choose_user_one_part(part, enter_count,rect):
             mouse_click(item["center"], rect)
             sleep(2)
             mouse_click(enter_count, rect)
+
+def choose_exchange():
+    items = screen()
+    enter_game = ()
+    for item in items:
+        if item["text"] == "进入游戏":
+            enter_game = item["center"]
+    return enter_game
