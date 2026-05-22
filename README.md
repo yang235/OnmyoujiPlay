@@ -1,4 +1,4 @@
-# OnmyoujiPlay — 阴阳师多小号自动化（自用）
+# OnmyoujiPlay — 阴阳师多小号自动化
 
 基于 OpenCV 实时视频流 + OCR 的《阴阳师》游戏自动化工具，通过 tkinter UI 启动登录流程、执行多小号日常翻勾协任务。(仅支持mumu桌面版本，旧版本桌面修改/ui_control/window_control/win.py中的名称)
 
