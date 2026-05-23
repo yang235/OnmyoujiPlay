@@ -2,7 +2,6 @@
   "chains": {
     "daily": [
       "gou_xie",
-      "you_xiang",
       "check_in",
       "temple_activity"
     ]
